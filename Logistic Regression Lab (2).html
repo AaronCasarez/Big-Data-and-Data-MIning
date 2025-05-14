@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <meta name="author" content="Aaron Casarez" />
+  <meta name="dcterms.date" content="2024-10-28" />
+  <title>Logistic Regression Lab</title>
+  <style>
+    html {
+      line-height: 1.5;
+      font-family: Georgia, serif;
+      font-size: 20px;
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 1em;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      body {
+        background-color: transparent;
+        color: black;
+        font-size: 12pt;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      font-family: Menlo, Monaco, 'Lucida Console', Consolas, monospace;
+      font-size: 85%;
+      margin: 0;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      background-color: #1a1a1a;
+      border: none;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    ul.task-list{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+  </style>
+  <!--[if lt IE 9]>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv-printshiv.min.js"></script>
+  <![endif]-->
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">Logistic Regression Lab</h1>
+<p class="author">Aaron Casarez</p>
+<p class="date">2024-10-28</p>
+</header>
+<p><code>{r setup, include=FALSE} knitr::opts_chunk$set(echo = TRUE)</code></p>
+<pre class="{r}"><code># 1. Prepare the data  ----------------------------------------------------
+
+admin_df &lt;- read.csv(&quot;SystemAdministrators_v2.csv&quot;, header = TRUE)
+head(admin_df)
+nrow(admin_df)</code></pre>
+<h1 id="scatter-plot--">2. Scatter plot ———————————————————-</h1>
+<pre class="{r}"><code>
+# Create a scatter plot of Experience vs. Training using colour to 
+# distinguish administrators who completed the task from those who did not complete it. 
+# Which predictor(s) appear(s) potentially useful for classifying task completion? 
+# The code for the plot is given below
+
+library(ggplot2)
+ggplot(admin_df, aes(x = Training, y = Experience, 
+                     color = as.factor(Completed.task))) +
+  geom_point() +
+  scale_color_manual(values = c(&quot;blue&quot;, &quot;red&quot;)) +
+  labs(title = &quot;Scatter Plot of Training vs. Experience&quot;,
+       x = &quot;Training&quot;,
+       y = &quot;Experience&quot;,
+       color = &quot;Completed Task&quot;) +
+  theme_dark()
+
+# Ans: It appears that those with more experience have higher task completion.</code></pre>
+<pre class="{r}"><code># 3. Logistic regression model --------------------------------------------
+
+# a.    Change the outcome variable data type to factor
+ 
+ # Convert the outcome variable to a factor
+admin_df$Completed.task &lt;- as.factor(admin_df$Completed.task)</code></pre>
+<pre class="{r}"><code>
+# b.    Settings: 70-30 split, seed = 666
+
+
+set.seed(666)
+
+train_index &lt;- sample(1:nrow(admin_df), 0.7 * nrow(admin_df))
+valid_index &lt;- setdiff(1:nrow(admin_df), train_index)
+
+train_df &lt;- admin_df[train_index, ]
+valid_df &lt;- admin_df[valid_index, ]
+
+
+nrow(train_df)
+nrow(valid_df)</code></pre>
+<pre class="{r}"><code>
+# c.    Get the predictions and probabilities for the training and validation sets
+
+
+library(caret)
+
+
+logistic_reg &lt;- train(Completed.task ~ Experience + Training + Team,
+                      data = train_df, method = &quot;glm&quot;)
+summary(logistic_reg)
+
+
+
+
+logistic_reg_pred_train &lt;- predict(logistic_reg, 
+                                   newdata = train_df, type = &quot;raw&quot;)
+
+head(logistic_reg_pred_train)
+
+
+
+
+logistic_reg_pred_train_prob &lt;- predict(logistic_reg, 
+                                        newdata = train_df, type = &quot;prob&quot;)
+
+head(logistic_reg_pred_train_prob)
+
+#part 2 od this question
+logistic_reg_pred_valid &lt;- predict(logistic_reg, newdata = valid_df, type = &quot;raw&quot;)
+
+logistic_reg_pred_valid_prob &lt;- predict(logistic_reg, newdata = valid_df, type = &quot;prob&quot;)
+
+head(logistic_reg_pred_valid)
+head(logistic_reg_pred_valid_prob)
+</code></pre>
+<pre class="{r}"><code># d.    Get the confusion matrices and classification reports. Explain
+confusionMatrix(as.factor(logistic_reg_pred_train), 
+                train_df$Completed.task, positive = &quot;1&quot;)
+
+con_mat_train &lt;- confusionMatrix(as.factor(logistic_reg_pred_train), 
+                                 train_df$Completed.task, positive = &quot;1&quot;)
+
+# Sensitivity and Precision for Training Set
+sensitivity_train &lt;- con_mat_train$byClass[&quot;Sensitivity&quot;]
+precision_train &lt;- con_mat_train$byClass[&quot;Precision&quot;]
+
+# F1 Score for Training Set
+f1_train &lt;- 2 / ((1 / sensitivity_train) + (1 / precision_train))
+f1_train &lt;- unname(f1_train) # To avoid awkward naming
+
+paste(&quot;The F1 score for the training set is&quot;, f1_train)
+##The model performs very well, with high accuracy (90.3) suggesting strong capability in predicting both task completion and non-completion. Sensitivity and specificity are both relatively high, indicating the model’s reliability in distinguishing between those who complete the task and those who don’t.</code></pre>
+<pre class="{r}"><code>
+# Confusion Matrix and classification report for valid
+confusionMatrix(as.factor(logistic_reg_pred_valid), 
+                valid_df$Completed.task, positive = &quot;1&quot;)
+
+# Confusion Matrix for Validation Set
+con_mat_valid &lt;- confusionMatrix(as.factor(logistic_reg_pred_valid), 
+                                 valid_df$Completed.task, positive = &quot;1&quot;)
+
+
+sensitivity_valid &lt;- con_mat_valid$byClass[&quot;Sensitivity&quot;]
+precision_valid &lt;- con_mat_valid$byClass[&quot;Precision&quot;]
+
+# F1 Score for Validation Set
+f1_valid &lt;- 2 / ((1 / sensitivity_valid) + (1 / precision_valid))
+f1_valid &lt;- unname(f1_valid)
+
+paste(&quot;The F1 score for the validation set is&quot;, f1_valid)
+#he validation metrics are slightly lower than the training metrics, which is often expected as the model has been tuned on the training data and may not perform quite as well on unseen data. The model has robust general performance, particularly in identifying non-completers with high specificity, and performs pretty well in identifying completers.
+</code></pre>
+<pre class="{r}"><code># e.    Plot the ROC curve. Explain
+# Load the pROC package for ROC analysis
+library(pROC)
+
+# Generate ROC for Training Set
+roc_train &lt;- roc(train_df$Completed.task, logistic_reg_pred_train_prob[,2])
+plot(roc_train, col = &quot;blue&quot;, main = &quot;ROC Curve for Training and Validation Sets&quot;)
+auc(roc_train) # Area Under the Curve for training
+
+# Generate ROC for Validation Set
+roc_valid &lt;- roc(valid_df$Completed.task, logistic_reg_pred_valid_prob[,2])
+plot(roc_valid, col = &quot;red&quot;, add = TRUE)
+auc(roc_valid) # Area Under the Curve for validation
+
+legend(&quot;bottomright&quot;, legend = c(&quot;Training&quot;, &quot;Validation&quot;),
+       col = c(&quot;blue&quot;, &quot;red&quot;), lwd = 2)
+
+#This ROC curve shows strong model performance with both training (blue) and validation (red) curves well above the random classifier line and achieving high sensitivity while maintaining good specificity. The small gap between training and validation curves suggests the model generalizes well without much overfitting, with both curves showing a characteristic steep rise around 0.9 specificity</code></pre>
+<h1 id="prediction">4. Prediction ———————————————————–</h1>
+<pre class="{r}"><code># Predict outcome for the new system administrators
+
+
+
+
+new_admin_df &lt;- read.csv(&quot;new_sys_admin.csv&quot;, header = TRUE)
+new_admin_df
+
+# Predict outcome for new administrators
+logistic_reg_pred_new &lt;- predict(logistic_reg, newdata = new_admin_df, type = &quot;raw&quot;)
+logistic_reg_pred_new_prob &lt;- predict(logistic_reg, newdata = new_admin_df, type = &quot;prob&quot;)
+
+# Display predictions and probabilities
+logistic_reg_pred_new
+logistic_reg_pred_new_prob
+
+#the first 2 are liekly to complete the task with percentages of 83.2 and 94.3 percent, while the second is not with only a likelyhood of 21.2 percent.</code></pre>
+</body>
+</html>
